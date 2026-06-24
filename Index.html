@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bobocabin Business Projection Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary: #3d6b5a;
+  --primary-light: #5a8f7b;
+  --secondary: #6fa891;
+  --accent: #c8a96b;
+  --accent-light: #e0c88a;
+  --light: #f5f2ec;
+  --border: #e2dbd2;
+  --text: #2d3527;
+  --text-light: #8a8c82;
+  --red-bg: #fff5f5;
+  --red-text: #c0392b;
+  --green-bg: #eef8f3;
+  --green-text: #3d6b5a;
+  --blue-bg: #eff4f1;
+  --white: #ffffff;
+  --shadow: 0 2px 16px rgba(61,107,90,0.09);
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0ece5; color: var(--text); font-size: 13px; }
+
+/* HEADER */
+.header {
+  background: var(--white);
+  color: var(--text);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 12px rgba(61,107,90,0.07);
+}
+.header-brand { display: flex; align-items: center; gap: 0; }
+.header-logo-img { height: 38px; width: auto; display: block; }
+.header-divider {
+  width: 1px; height: 28px; background: var(--border);
+  margin: 0 16px;
+}
+.header-title { font-size: 14px; font-weight: 700; letter-spacing: 0.2px; color: var(--primary); }
+.header-subtitle { font-size: 11px; color: var(--text-light); margin-top: 2px; font-weight: 400; }
+.btn-calculate {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 26px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+  font-family: inherit;
+}
+.btn-calculate:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(61,107,90,0.3); }
+
+/* LAYOUT */
+.main-layout { display: grid; grid-template-columns: 368px 1fr; gap: 0; min-height: calc(100vh - 64px); }
+.left-panel { background: #faf8f4; border-right: 1px solid var(--border); overflow-y: auto; padding: 16px; }
+.right-panel { overflow-y: auto; padding: 16px; }
+
+/* CARDS */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.card-header {
+  background: var(--primary);
+  color: white;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-header.secondary { background: var(--secondary); }
+.card-header.accent { background: var(--accent); color: var(--primary); }
+.card-body { padding: 14px; }
+
+/* FORM INPUTS */
+.form-group { margin-bottom: 10px; }
+.form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.form-control {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  transition: border-color 0.2s;
+  background: var(--white);
+}
+.form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(61,107,90,0.12); }
+select.form-control { cursor: pointer; }
+
+/* SCHEME SELECTOR */
+.scheme-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.scheme-btn {
+  padding: 8px 4px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--light);
+  cursor: pointer;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+  color: var(--text-light);
+}
+.scheme-btn:hover { border-color: var(--primary); color: var(--primary); }
+.scheme-btn.active.aggressive { border-color: #c0392b; background: #fff0f0; color: #c0392b; }
+.scheme-btn.active.normal { border-color: var(--accent); background: #fdf8ee; color: #9b7535; }
+.scheme-btn.active.conservative { border-color: var(--primary); background: #eef5f2; color: var(--primary); }
+.scheme-btn.invest-btn.active { border-color: var(--primary); background: #eef5f2; color: var(--primary); }
+
+/* CABIN TABLE */
+.cabin-table { width: 100%; border-collapse: collapse; }
+.cabin-table th {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  color: var(--text-light); padding: 5px 6px; background: var(--light);
+  border: 1px solid var(--border); text-align: center;
+}
+.cabin-table td { padding: 4px 5px; border: 1px solid var(--border); vertical-align: middle; }
+.cabin-table td:first-child { font-size: 11px; font-weight: 600; color: var(--text); padding-left: 8px; }
+.cabin-type-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--blue-bg);
+  color: var(--primary);
+  margin-top: 1px;
+}
+.cabin-count-input {
+  width: 55px; padding: 4px 6px; border: 1.5px solid var(--border);
+  border-radius: 5px; font-size: 13px; text-align: center; font-weight: 600;
+  color: var(--primary); font-family: inherit;
+}
+.cabin-count-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(61,107,90,0.1); }
+.price-input-small {
+  width: 100%; padding: 4px 6px; border: 1.5px solid var(--border);
+  border-radius: 5px; font-size: 11px; text-align: right;
+  color: var(--secondary); font-weight: 600;
+}
+.price-input-small:focus { outline: none; border-color: var(--secondary); }
+
+/* FEATURE INPUTS */
+.feature-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.feature-name { flex: 1; font-size: 12px; font-weight: 500; }
+.feature-input {
+  width: 130px; padding: 5px 8px; border: 1.5px solid var(--border);
+  border-radius: 5px; font-size: 12px; text-align: right;
+}
+.feature-input:focus { outline: none; border-color: var(--accent); }
+.btn-add-feature {
+  width: 100%; padding: 7px; border: 2px dashed var(--border);
+  background: transparent; border-radius: 6px; cursor: pointer;
+  color: var(--text-light); font-size: 12px; transition: all 0.2s;
+  margin-top: 6px;
+}
+.btn-add-feature:hover { border-color: var(--primary); color: var(--primary); background: var(--light); }
+.btn-remove { background: none; border: none; cursor: pointer; color: #e74c3c; font-size: 16px; padding: 0 4px; }
+
+/* COLLAPSIBLE */
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; padding: 8px 14px;
+  background: var(--light); border-bottom: 1px solid var(--border);
+}
+.collapsible-header:hover { background: #ebe7e0; }
+.collapsible-icon { transition: transform 0.2s; font-size: 16px; }
+.collapsible-icon.open { transform: rotate(180deg); }
+.collapsible-body { display: none; padding: 14px; }
+.collapsible-body.open { display: block; }
+
+/* OCCUPANCY TABLE */
+.occ-table { width: 100%; border-collapse: collapse; }
+.occ-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-light); padding: 4px 6px; background: var(--light); border: 1px solid var(--border); text-align: center; }
+.occ-table td { padding: 3px 5px; border: 1px solid var(--border); }
+.occ-input { width: 60px; padding: 3px 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; text-align: center; }
+.occ-input:focus { outline: none; border-color: var(--secondary); }
+
+/* KPI CARDS */
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.kpi-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--border);
+  transition: transform 0.2s;
+}
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-card.primary-card { border-left-color: var(--primary); }
+.kpi-card.success-card { border-left-color: var(--secondary); }
+.kpi-card.warning-card { border-left-color: var(--accent); }
+.kpi-card.danger-card { border-left-color: #e74c3c; }
+.kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 6px; }
+.kpi-value { font-size: 20px; font-weight: 800; color: var(--primary); line-height: 1; }
+.kpi-sub { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+.kpi-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 3px; margin-top: 3px;
+}
+.badge-green { background: var(--green-bg); color: var(--green-text); }
+.badge-yellow { background: #fff9e6; color: #d4880a; }
+.badge-red { background: var(--red-bg); color: var(--red-text); }
+
+/* CHARTS */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.chart-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; }
+.chart-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+.chart-container { position: relative; height: 200px; }
+
+/* TABS */
+.tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 0; }
+.tab-btn {
+  padding: 10px 20px; border: none; background: none; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--text-light);
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all 0.2s; letter-spacing: 0.3px; text-transform: uppercase;
+}
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* P&L TABLE */
+.pnl-wrapper { overflow-x: auto; }
+.pnl-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px; }
+.pnl-table th {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--primary); color: white;
+  padding: 8px 10px; text-align: right; font-size: 10px;
+  font-weight: 700; text-transform: uppercase; white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.15);
+}
+.pnl-table th:first-child { text-align: left; min-width: 220px; border-right: 1px solid rgba(255,255,255,0.3); }
+.pnl-table td { padding: 5px 10px; border-bottom: 1px solid #f0f0f0; white-space: nowrap; text-align: right; }
+.pnl-table td:first-child { text-align: left; font-weight: 500; border-right: 1px solid var(--border); }
+
+/* Row types */
+.row-section td { background: var(--primary); color: white; font-weight: 800; font-size: 11px; }
+.row-section td:first-child { padding-left: 10px; }
+.row-revenue td { background: var(--green-bg); color: #1a5e35; }
+.row-revenue-sub td { background: #f8fffc; color: #2d8c5a; }
+.row-revenue-sub td:first-child { padding-left: 24px; font-weight: 400; }
+.row-cost td { background: var(--red-bg); color: #8b2a2a; }
+.row-cost-sub td { background: #fff9f9; color: #a03535; }
+.row-cost-sub td:first-child { padding-left: 24px; font-weight: 400; }
+.row-subtotal td { background: #e8ede9; color: var(--primary); font-weight: 700; }
+.row-gop td { background: #cee4da; color: #2b5445; font-weight: 800; }
+.row-ebitda td { background: var(--primary); color: white; font-weight: 800; }
+.row-highlight td { background: var(--secondary); color: white; font-weight: 700; }
+.row-deduction td { background: #fff3e0; color: #b35a00; }
+.row-deduction td:first-child { padding-left: 24px; }
+.row-separator td { background: var(--border); height: 2px; padding: 0; }
+.row-opex td:first-child { padding-left: 24px; font-weight: 400; }
+.row-opex td { color: var(--red-text); background: #fefafa; }
+.positive { color: #27ae60 !important; }
+.negative { color: #c0392b !important; }
+
+/* CAPEX TABLE */
+.capex-table { width: 100%; border-collapse: collapse; }
+.capex-table th { background: var(--primary); color: white; padding: 8px 10px; font-size: 11px; text-align: left; }
+.capex-table th:last-child { text-align: right; }
+.capex-table td { padding: 6px 10px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+.capex-table td:last-child { text-align: right; font-weight: 600; color: var(--primary); }
+.capex-table .group-header td { background: #eef5f1; font-weight: 700; color: var(--primary); font-size: 12px; }
+.capex-table .sub-row td:first-child { padding-left: 24px; color: var(--text-light); font-weight: 400; }
+.capex-table .total-row td { background: var(--primary); color: white; font-weight: 800; font-size: 13px; }
+.capex-table .total-row td:last-child { color: var(--accent-light); }
+
+/* HELPER */
+.text-muted { color: var(--text-light); font-size: 10px; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+.no-data {
+  text-align: center; padding: 60px 20px; color: var(--text-light);
+  font-size: 14px;
+}
+.no-data .icon { font-size: 48px; margin-bottom: 12px; }
+.alert-info {
+  background: #eef6f0; border: 1px solid #c2d9cc; border-radius: 6px;
+  padding: 10px 12px; font-size: 11px; color: #2d5241; margin-bottom: 10px;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #ece8e1; }
+::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 3px; }
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .main-layout { grid-template-columns: 1fr; }
+  .left-panel { border-right: none; border-bottom: 1px solid var(--border); }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  .header, .left-panel { display: none; }
+  .right-panel { padding: 0; }
+}
+
+/* LOADING */
+.loading-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(45,53,39,0.45); z-index: 999;
+  display: none; align-items: center; justify-content: center;
+}
+.loading-overlay.show { display: flex; }
+.loading-box {
+  background: white; border-radius: 12px; padding: 24px 36px;
+  text-align: center; font-weight: 600; color: var(--primary);
+}
+.spinner {
+  width: 36px; height: 36px; border: 4px solid #dce9e4;
+  border-top-color: var(--primary); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* TOOLTIP */
+[data-tip] { position: relative; cursor: help; border-bottom: 1px dashed var(--text-light); }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: var(--primary); color: white; padding: 5px 9px;
+  border-radius: 5px; font-size: 10px; white-space: nowrap; z-index: 50;
+  margin-bottom: 4px;
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    Calculating projections...
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <img class="header-logo-img" src="Bobocabin Horizontal Positive.png" alt="Bobocabin" onerror="this.style.display='none';document.getElementById('hdr-fallback').style.display='flex'">
+    <div id="hdr-fallback" style="display:none;align-items:center;gap:8px;">
+      <div style="width:32px;height:32px;background:var(--primary);border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:14px;">B</div>
+      <span style="font-weight:700;color:var(--primary);font-size:16px;">bobocabin</span>
+    </div>
+    <div class="header-divider"></div>
+    <div>
+      <div class="header-title">Business Projection Calculator</div>
+      <div class="header-subtitle">15-Year Financial Model · Partner Investment Analysis</div>
+    </div>
+  </div>
+  <button class="btn-calculate" onclick="runCalculation()">▶ Calculate</button>
+</div>
+
+<div class="main-layout">
+  <!-- LEFT PANEL: INPUTS -->
+  <div class="left-panel">
+
+    <!-- Property Info -->
+    <div class="card">
+      <div class="card-header">🏡 Property Info</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Province / Region</label>
+          <select class="form-control" id="province" onchange="onProvinceChange()">
+            <option value="west_java">West Java (Jawa Barat)</option>
+            <option value="central_java">Central Java (Jawa Tengah)</option>
+            <option value="east_java">East Java (Jawa Timur)</option>
+            <option value="bali">Bali</option>
+            <option value="north_sumatra">North Sumatra (Sumatera Utara)</option>
+            <option value="central_sumatra">Central Sumatra (Sumatera Tengah)</option>
+            <option value="south_sumatra">South Sumatra (Sumatera Selatan)</option>
+            <option value="other">Other Islands</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Growth Scheme</label>
+          <div class="scheme-group">
+            <button class="scheme-btn aggressive" onclick="setScheme('aggressive',this)">🚀 Aggressive</button>
+            <button class="scheme-btn normal active normal" onclick="setScheme('normal',this)">📈 Normal</button>
+            <button class="scheme-btn conservative" onclick="setScheme('conservative',this)">🛡 Conservative</button>
+          </div>
+          <div id="scheme-desc" class="text-muted" style="margin-top:6px;"></div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Investment Scheme -->
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Investment Scheme</label>
+          <div class="scheme-group" style="grid-template-columns:1fr 1fr;">
+            <button class="scheme-btn invest-btn active jv" onclick="setInvestScheme('jv',this)">🤝 JV Invest</button>
+            <button class="scheme-btn invest-btn" onclick="setInvestScheme('full_operator',this)">🏢 Full Operator</button>
+          </div>
+          <div id="invest-scheme-desc" class="text-muted" style="margin-top:6px;">JV: Bobobox &amp; Partner co-invest. Rent (3–5% NR) is included in P&amp;L.</div>
+        </div>
+
+        <!-- JV Proportion inputs — hidden when Full Operator -->
+        <div id="jv-proportion-row" style="margin-top:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Bobobox Share (%)</label>
+              <input type="number" class="form-control" id="boboboxPct" value="10" min="0" max="100" step="0.1" onchange="onShareChange('bobobox')">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Partner Share (%)</label>
+              <input type="number" class="form-control" id="partnerPct" value="90" min="0" max="100" step="0.1" onchange="onShareChange('partner')">
+            </div>
+          </div>
+          <div class="text-muted" style="margin-top:4px;">Total must equal 100%. Rent cost shared via P&amp;L.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cabin Composition -->
+    <div class="card">
+      <div class="card-header">🏠 Cabin Composition & Pricing</div>
+      <div class="card-body">
+        <div class="alert-info">Set cabin count per type. Prices are <strong>Display Prices (incl. 10% tax)</strong> — pre-filled from scheme, editable.</div>
+        <table class="cabin-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Count</th>
+              <th>Display Price (Rp)</th>
+            </tr>
+          </thead>
+          <tbody id="cabinTableBody">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+        <div style="margin-top:8px;font-size:10px;color:var(--text-light);">
+          <strong>Grand:</strong> Standard 4-pax cabin &nbsp;|&nbsp; <strong>Hot Tub:</strong> w/ private hot tub &nbsp;|&nbsp; <strong>Royal:</strong> 8-pax premium
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Features -->
+    <div class="card">
+      <div class="card-header accent">⭐ Additional Features (CAPEX)</div>
+      <div class="card-body">
+        <div class="text-muted" style="margin-bottom:10px;">Enter CAPEX cost for each additional facility to be added to total investment.</div>
+        <div id="featuresList">
+          <div class="feature-row" data-feature="road_access">
+            <span class="feature-name">🛣 Road Access (Akses Jalan)</span>
+            <input type="text" class="feature-input" placeholder="0" onchange="formatFeatureInput(this)" value="0">
+            <button class="btn-remove" onclick="clearFeature(this)">×</button>
+          </div>
+          <div class="feature-row" data-feature="drop_off">
+            <span class="feature-name">🚗 Drop Off Zone</span>
+            <input type="text" class="feature-input" placeholder="0" onchange="formatFeatureInput(this)" value="0">
+            <button class="btn-remove" onclick="clearFeature(this)">×</button>
+          </div>
+          <div class="feature-row" data-feature="playground">
+            <span class="feature-name">🛝 Playground</span>
+            <input type="text" class="feature-input" placeholder="0" onchange="formatFeatureInput(this)" value="0">
+            <button class="btn-remove" onclick="clearFeature(this)">×</button>
+          </div>
+          <div class="feature-row" data-feature="swimming_pool">
+            <span class="feature-name">🏊 Swimming Pool</span>
+            <input type="text" class="feature-input" placeholder="0" onchange="formatFeatureInput(this)" value="0">
+            <button class="btn-remove" onclick="clearFeature(this)">×</button>
+          </div>
+        </div>
+        <div id="customFeatures"></div>
+        <button class="btn-add-feature" onclick="addCustomFeature()">+ Add Custom Feature</button>
+      </div>
+    </div>
+
+    <!-- Advanced Settings -->
+    <div class="card">
+      <div class="collapsible-header" onclick="toggleCollapsible(this)">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">⚙ Advanced Settings</span>
+        <span class="collapsible-icon">▼</span>
+      </div>
+      <div class="collapsible-body" id="advancedBody">
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Occupancy Rate per Year (%)</div>
+        <table class="occ-table">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Occ%</th>
+              <th>Year</th>
+              <th>Occ%</th>
+            </tr>
+          </thead>
+          <tbody id="occTableBody"></tbody>
+        </table>
+        <hr class="divider">
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Revenue Assumptions</div>
+        <div class="form-group">
+          <label class="form-label">Extra Bed Occupancy (%)</label>
+          <input type="number" class="form-control" id="extrabedOcc" value="30" min="0" max="100" step="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Extra Bed Price (Display Rp)</label>
+          <input type="text" class="form-control" id="extrabedPrice" value="500,000" onchange="formatInput(this)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ancillary Purchase Rate (%)</label>
+          <input type="number" class="form-control" id="ancillaryRate" value="50" min="0" max="100" step="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ancillary Revenue per Guest (Rp)</label>
+          <input type="text" class="form-control" id="ancillaryPerGuest" value="100,000" onchange="formatInput(this)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bobodeli Monthly Revenue (Rp)</label>
+          <input type="text" class="form-control" id="bobodeliMonthly" value="50,000,000" onchange="formatInput(this)">
+        </div>
+        <hr class="divider">
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Cost Assumptions</div>
+        <div class="form-group">
+          <label class="form-label">Discount Rate (%)</label>
+          <input type="number" class="form-control" id="discountRate" value="4.56" min="0" max="30" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">OTA Commission Rate (%)</label>
+          <input type="number" class="form-control" id="commissionRate" value="15.75" min="0" max="40" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CoS Room (% Gross Room Rev)</label>
+          <input type="number" class="form-control" id="cosRoom" value="8.33" min="0" max="30" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price Inflation / Year (%)</label>
+          <input type="number" class="form-control" id="priceInflation" value="5" min="0" max="20" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Opex Inflation / Year (%)</label>
+          <input type="number" class="form-control" id="opexInflation" value="3" min="0" max="15" step="0.1">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-calculate" style="width:100%;margin-top:4px;" onclick="runCalculation()">▶ Run Projection</button>
+    <div style="text-align:center;margin-top:6px;font-size:10px;color:var(--text-light);">
+      JV Structure: Bobobox 20% / Partner 80%
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL: OUTPUTS -->
+  <div class="right-panel">
+    <div id="outputArea">
+      <div class="no-data">
+        <div class="icon">📊</div>
+        <div>Configure your inputs and click <strong>Calculate</strong> to generate the projection.</div>
+        <div style="margin-top:8px;font-size:12px;">All inputs are pre-filled with default assumptions from the Bobocabin model.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONSTANTS & LOOKUP TABLES
+// ============================================================
+
+const CABIN_TYPES = [
+  { id: 'grandStd',    label: 'Grand Standard',       tag: 'Grand',   pax: 4, unitCost: 565984424,  assembly: 20697400, sanitary: 16948743, mattress: 12264338, license: 11100000, structureCost: 20460000, addItems: 0          },
+  { id: 'grandPrem',   label: 'Grand Premium',         tag: 'Grand',   pax: 4, unitCost: 648128945,  assembly: 20697400, sanitary: 16948743, mattress: 12264338, license: 11100000, structureCost: 20460000, addItems: 0          },
+  { id: 'grandHtStd',  label: 'Grand Hot Tub Std',     tag: 'HotTub',  pax: 4, unitCost: 640792500,  assembly: 26906620, sanitary: 26454243, mattress: 12264338, license: 11100000, structureCost: 28400000, addItems: 25604006   },
+  { id: 'grandHtPrem', label: 'Grand Hot Tub Premium', tag: 'HotTub',  pax: 4, unitCost: 714933551,  assembly: 26906620, sanitary: 26454243, mattress: 12264338, license: 11100000, structureCost: 28400000, addItems: 25604006   },
+  { id: 'royalHtStd',  label: 'Royal Hot Tub Std',     tag: 'Royal',   pax: 8, unitCost: 1263610377, assembly: 43783662, sanitary: 41875727, mattress: 12264338, license: 22200000, structureCost: 55000000, addItems: 25562087   },
+  { id: 'royalHtPrem', label: 'Royal Hot Tub Premium', tag: 'Royal',   pax: 8, unitCost: 1115328275, assembly: 43783662, sanitary: 41875727, mattress: 12264338, license: 22200000, structureCost: 55000000, addItems: 25562087   },
+];
+
+// Base display prices per scheme [aggressive, normal, conservative] (incl. 10% tax)
+const BASE_PRICES = {
+  grandStd:    { aggressive: 1600000, normal: 1500000, conservative: 1400000 },
+  grandPrem:   { aggressive: 1700000, normal: 1600000, conservative: 1500000 },
+  grandHtStd:  { aggressive: 1900000, normal: 1800000, conservative: 1700000 },
+  grandHtPrem: { aggressive: 2000000, normal: 1900000, conservative: 1800000 },
+  royalHtStd:  { aggressive: 3300000, normal: 3200000, conservative: 3100000 },
+  royalHtPrem: { aggressive: 3500000, normal: 3300000, conservative: 3200000 },
+};
+
+// Occupancy ramp by scheme (Years 1-15; Year 6+ all same)
+// Conservative: 55, 60, 65, 70, 75, 80, 80...
+// Normal:       60, 65, 70, 75, 80, 80, 80...
+// Aggressive:   65, 70, 75, 80, 80, 80, 80...
+const OCC_RAMP = {
+  aggressive:   [0.65, 0.70, 0.75, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80],
+  normal:       [0.60, 0.65, 0.70, 0.75, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80],
+  conservative: [0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80],
+};
+
+// Delivery ticket per month by region (operational opex)
+const DELIVERY_BY_REGION = {
+  west_java: 3500000, central_java: 3500000, east_java: 4000000,
+  bali: 4500000, north_sumatra: 6500000, central_sumatra: 7000000,
+  south_sumatra: 6000000, other: 6000000,
+};
+
+// Cabin handling cost per cabin (CAPEX, one-time)
+const HANDLING_BY_REGION = {
+  west_java: 3500000, central_java: 3500000, east_java: 4000000,
+  bali: 4500000, north_sumatra: 6500000, central_sumatra: 7000000,
+  south_sumatra: 6000000, other: 6000000,
+};
+
+// Building composition by cabin count range
+// {cabin_range: {lobby, inv, con, dorm, bobodeli, dist, fire, plumb, genset}}
+const BLDG_COMP = [
+  { min: 0,  max: 10,  q: {lobby:1, inv:1, con:0, dorm:0, bob:0, dist:0, fire:0, plumb:1, gen:1} },
+  { min: 10, max: 15,  q: {lobby:1, inv:1, con:0, dorm:0, bob:0, dist:0, fire:1, plumb:1, gen:1} },
+  { min: 15, max: 20,  q: {lobby:1, inv:1, con:1, dorm:1, bob:0, dist:1, fire:2, plumb:1, gen:1} },
+  { min: 20, max: 25,  q: {lobby:1, inv:1, con:1, dorm:1, bob:0, dist:1, fire:2, plumb:1, gen:1} },
+  { min: 25, max: 30,  q: {lobby:1, inv:1, con:1, dorm:1, bob:1, dist:2, fire:3, plumb:1, gen:1} },
+  { min: 30, max: 999, q: {lobby:1, inv:1, con:2, dorm:1, bob:1, dist:3, fire:3, plumb:1, gen:1} },
+];
+
+// Building construction unit costs (Rp per unit)
+const BLDG_COSTS = { lobby: 220000000, inv: 117000000, con: 117000000, dorm: 120000000, bob: 300000000, dist: 50000000, fire: 18000000, plumb: 15000000, gen: 50000000 };
+// Structure unit costs for buildings (Rp per unit)
+const STRUCT_BLDG_COSTS = { lobby: 65000000, inv: 35000000, con: 35000000, dorm: 50000000, bob: 50000000, dist: 10000000, fire: 18000000, plumb: 25000000, gen: 15000000 };
+
+// Current occupancy ramp scheme
+let currentScheme = 'normal';
+
+// Investment scheme: 'jv' (co-invest, rent applies) or 'full_operator' (partner 100%, rent = 0)
+let currentInvestScheme = 'jv';
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  buildCabinTable();
+  setScheme('normal', document.querySelector('.scheme-btn.normal'));
+  updateOccupancyTable();
+});
+
+function buildCabinTable() {
+  const tbody = document.getElementById('cabinTableBody');
+  tbody.innerHTML = '';
+  CABIN_TYPES.forEach(t => {
+    const tr = document.createElement('tr');
+    const price = BASE_PRICES[t.id][currentScheme];
+    tr.innerHTML = `
+      <td>
+        <div style="font-size:11px;font-weight:600;">${t.label}</div>
+        <span class="cabin-type-tag">${t.tag} · ${t.pax} pax</span>
+      </td>
+      <td style="text-align:center;">
+        <input type="number" class="cabin-count-input" id="count_${t.id}" value="0" min="0" max="99" onchange="updateTotals()">
+      </td>
+      <td>
+        <input type="text" class="price-input-small" id="price_${t.id}" value="${fmtNum(price)}" onchange="formatInput(this)">
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  // Pre-fill example: 20 Grand Std, 6 Grand HT Std, 2 Royal HT Std = 28 cabins
+  setDefaultCabins();
+}
+
+function setDefaultCabins() {
+  document.getElementById('count_grandStd').value = 20;
+  document.getElementById('count_grandHtStd').value = 6;
+  document.getElementById('count_royalHtStd').value = 2;
+  updateTotals();
+}
+
+function updateTotals() {
+  // Could show totals in header — for now just triggers reactivity
+}
+
+function setScheme(scheme, btn) {
+  currentScheme = scheme;
+  document.querySelectorAll('.scheme-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const descs = {
+    aggressive: '🚀 High occupancy ramp. Optimistic pricing, ideal for premium locations.',
+    normal: '📈 Balanced approach. Moderate ramp, standard pricing assumptions.',
+    conservative: '🛡 Careful projection. Lower occupancy, ideal for risk analysis.'
+  };
+  document.getElementById('scheme-desc').textContent = descs[scheme];
+  // Update prices
+  CABIN_TYPES.forEach(t => {
+    const el = document.getElementById(`price_${t.id}`);
+    if (el) el.value = fmtNum(BASE_PRICES[t.id][scheme]);
+  });
+  updateOccupancyTable();
+}
+
+function setInvestScheme(scheme, btn) {
+  currentInvestScheme = scheme;
+  document.querySelectorAll('.invest-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const jvRow = document.getElementById('jv-proportion-row');
+  const desc = document.getElementById('invest-scheme-desc');
+  if (scheme === 'jv') {
+    jvRow.style.display = 'block';
+    desc.textContent = 'JV: Bobobox & Partner co-invest. Rent (3–5% NR) is included in P&L.';
+    btn.classList.add('jv');
+  } else {
+    jvRow.style.display = 'none';
+    desc.textContent = 'Full Operator: Partner funds 100%. Rent expense = 0 (operator model).';
+  }
+}
+
+function onShareChange(changed) {
+  const bEl = document.getElementById('boboboxPct');
+  const pEl = document.getElementById('partnerPct');
+  let b = Math.min(100, Math.max(0, parseFloat(bEl.value) || 0));
+  let p = Math.min(100, Math.max(0, parseFloat(pEl.value) || 0));
+  if (changed === 'bobobox') {
+    p = Math.round((100 - b) * 10) / 10;
+    pEl.value = p;
+  } else {
+    b = Math.round((100 - p) * 10) / 10;
+    bEl.value = b;
+  }
+}
+
+function updateOccupancyTable() {
+  const tbody = document.getElementById('occTableBody');
+  tbody.innerHTML = '';
+  const occ = OCC_RAMP[currentScheme];
+  const yearsToShow = Math.min(8, 15); // Show Y1-Y8, last row "Y9-15"
+  for (let i = 0; i < 8; i += 2) {
+    const tr = document.createElement('tr');
+    const y1 = i + 1, y2 = i + 2;
+    tr.innerHTML = `
+      <td style="font-size:11px;font-weight:600;">Y${y1}</td>
+      <td><input type="number" class="occ-input" id="occ_y${y1}" value="${Math.round(occ[i]*100)}" min="1" max="100" step="1"></td>
+      ${y2 <= 15 ? `<td style="font-size:11px;font-weight:600;">Y${y2}</td><td><input type="number" class="occ-input" id="occ_y${y2}" value="${Math.round(occ[y2-1]*100)}" min="1" max="100" step="1"></td>` : '<td></td><td></td>'}`;
+    tbody.appendChild(tr);
+  }
+}
+
+function onProvinceChange() { /* delivery expense updates on calculate */ }
+
+function toggleCollapsible(header) {
+  const body = document.getElementById('advancedBody');
+  const icon = header.querySelector('.collapsible-icon');
+  body.classList.toggle('open');
+  icon.classList.toggle('open');
+}
+
+let customFeatureCount = 0;
+function addCustomFeature() {
+  customFeatureCount++;
+  const div = document.createElement('div');
+  div.className = 'feature-row';
+  div.id = `custom_feat_${customFeatureCount}`;
+  div.innerHTML = `
+    <input type="text" class="form-control" placeholder="Feature name" style="flex:1;padding:5px 8px;" id="custom_name_${customFeatureCount}">
+    <input type="text" class="feature-input" placeholder="0" id="custom_cost_${customFeatureCount}" onchange="formatFeatureInput(this)" value="0">
+    <button class="btn-remove" onclick="document.getElementById('custom_feat_${customFeatureCount}').remove()">×</button>`;
+  document.getElementById('customFeatures').appendChild(div);
+}
+
+function clearFeature(btn) { btn.previousElementSibling.value = '0'; }
+
+// ============================================================
+// INPUT HELPERS
+// ============================================================
+function fmtNum(n) {
+  if (n === null || n === undefined || isNaN(n)) return '0';
+  return Math.round(n).toLocaleString('en-US');
+}
+
+function parseNum(str) {
+  if (typeof str === 'number') return str;
+  return parseFloat((str || '0').toString().replace(/,/g, '')) || 0;
+}
+
+function formatInput(el) { el.value = fmtNum(parseNum(el.value)); }
+function formatFeatureInput(el) { el.value = fmtNum(parseNum(el.value)); }
+
+function fmtIDR(val, unit = 'M') {
+  // Shows in Millions (Juta)
+  const m = val / 1e6;
+  if (Math.abs(m) >= 1000) return (m / 1000).toFixed(2) + ' B';
+  return m.toFixed(1) + ' M';
+}
+
+function fmtIDRFull(val) {
+  return 'Rp ' + Math.abs(Math.round(val)).toLocaleString('id-ID');
+}
+
+function fmtPct(val) { return (val * 100).toFixed(1) + '%'; }
+
+function getOccInputs() {
+  const occ = [];
+  for (let y = 1; y <= 15; y++) {
+    const el = document.getElementById(`occ_y${y}`);
+    if (el) occ.push(parseFloat(el.value) / 100);
+    else occ.push(OCC_RAMP[currentScheme][Math.min(y, 15) - 1]);
+  }
+  return occ;
+}
+
+function getInputs() {
+  const cabins = {};
+  CABIN_TYPES.forEach(t => {
+    cabins[t.id] = parseInt(document.getElementById(`count_${t.id}`).value) || 0;
+  });
+  const prices = {};
+  CABIN_TYPES.forEach(t => {
+    prices[t.id] = parseNum(document.getElementById(`price_${t.id}`).value);
+  });
+  const province = document.getElementById('province').value;
+  const occupancy = getOccInputs();
+  const extrabedOcc = (parseFloat(document.getElementById('extrabedOcc').value) || 30) / 100;
+  const extrabedPrice = parseNum(document.getElementById('extrabedPrice').value);
+  const ancillaryRate = (parseFloat(document.getElementById('ancillaryRate').value) || 50) / 100;
+  const ancillaryPerGuest = parseNum(document.getElementById('ancillaryPerGuest').value);
+  const bobodeliMonthly = parseNum(document.getElementById('bobodeliMonthly').value);
+  const discountRate = (parseFloat(document.getElementById('discountRate').value) || 4.56) / 100;
+  const commissionRate = (parseFloat(document.getElementById('commissionRate').value) || 15.75) / 100;
+  const cosRoom = (parseFloat(document.getElementById('cosRoom').value) || 8.33) / 100;
+  const priceInflation = (parseFloat(document.getElementById('priceInflation').value) || 5) / 100;
+  const opexInflation = (parseFloat(document.getElementById('opexInflation').value) || 3) / 100;
+
+  // Additional features
+  const features = [];
+  document.querySelectorAll('#featuresList .feature-row').forEach(row => {
+    const nameEl = row.querySelector('.feature-name');
+    const valEl = row.querySelector('.feature-input');
+    if (nameEl && valEl) {
+      const cost = parseNum(valEl.value);
+      if (cost > 0) features.push({ name: nameEl.textContent.trim(), cost });
+    }
+  });
+  for (let i = 1; i <= customFeatureCount; i++) {
+    const nameEl = document.getElementById(`custom_name_${i}`);
+    const costEl = document.getElementById(`custom_cost_${i}`);
+    if (nameEl && costEl) {
+      const cost = parseNum(costEl.value);
+      if (cost > 0) features.push({ name: nameEl.value || `Custom Feature ${i}`, cost });
+    }
+  }
+
+  const investScheme = currentInvestScheme;
+  const boboboxPct = (investScheme === 'full_operator') ? 0
+    : (parseFloat(document.getElementById('boboboxPct').value) || 10) / 100;
+  const partnerPct = (investScheme === 'full_operator') ? 1
+    : (parseFloat(document.getElementById('partnerPct').value) || 90) / 100;
+
+  return { cabins, prices, province, occupancy, extrabedOcc, extrabedPrice, ancillaryRate, ancillaryPerGuest, bobodeliMonthly, discountRate, commissionRate, cosRoom, priceInflation, opexInflation, features, scheme: currentScheme, investScheme, boboboxPct, partnerPct };
+}
+
+// ============================================================
+// CAPEX CALCULATION
+// ============================================================
+function calculateCAPEX(inp) {
+  const { cabins, prices, province, features } = inp;
+  const total = Object.values(cabins).reduce((s, v) => s + v, 0);
+  const grandTotal = cabins.grandStd + cabins.grandPrem;
+  const grandHtTotal = cabins.grandHtStd + cabins.grandHtPrem;
+  const royalHtTotal = cabins.royalHtStd + cabins.royalHtPrem;
+  const hotTubTotal = grandHtTotal + royalHtTotal;
+
+  if (total === 0) return null;
+
+  // 1. Cabin Unit Costs
+  let cabinCost = 0;
+  CABIN_TYPES.forEach(t => { cabinCost += cabins[t.id] * t.unitCost; });
+
+  // 2. Additional Items (hot tub accessories)
+  const addItems = grandHtTotal * 25604006 + royalHtTotal * 25562087;
+
+  // 3. Sanitary & Water Heater
+  const sanitary = grandTotal * 16948743 + grandHtTotal * 26454243 + royalHtTotal * 41875727;
+
+  // 4. Mattress
+  const mattress = total * 12264338;
+
+  // 5. Assembly
+  const assembly = grandTotal * 20697400 + grandHtTotal * 26906620 + royalHtTotal * 43783662;
+
+  // 6. License (per cabin type)
+  const license = (grandTotal + grandHtTotal) * 11100000 + royalHtTotal * 22200000;
+
+  // 7. Design + Self-checkin (fixed)
+  const designFee = 750000000;
+  const selfCheckin = 56730000;
+
+  // 8. Handling & Delivery (one-time CAPEX per cabin)
+  const handlingCost = HANDLING_BY_REGION[province] || 3500000;
+  const handling = total * handlingCost;
+
+  // 9. Structure Cabin (avg landed/deck mix per type)
+  let structCabin = 0;
+  CABIN_TYPES.forEach(t => { structCabin += cabins[t.id] * t.structureCost; });
+
+  // 10. Building composition
+  const comp = getBuildingComp(total);
+  let buildingCost = 0, structBldgCost = 0;
+  Object.keys(comp).forEach(k => {
+    buildingCost += (comp[k] || 0) * (BLDG_COSTS[k] || 0);
+    structBldgCost += (comp[k] || 0) * (STRUCT_BLDG_COSTS[k] || 0);
+  });
+
+  // 11. Landscape (per cabin)
+  const landscape = total * 37400000;
+
+  // 12. Electrical (per cabin)
+  const electrical = total * 43450000;
+
+  // 13. Plumbing
+  const plumbing = total * 25000000 + hotTubTotal * 100000000 + 33500000;
+
+  // 14. CCTV & Technology (per cabin + fixed)
+  const cctvTech = total * 29500000 + 150000000;
+
+  // 15. Legal & Permit (fixed)
+  const legalPermit = 200000000;
+
+  // 16. Preparation (PLN per cabin + fixed site costs)
+  const preparation = total * 3250000 + 707500000;
+
+  // 17. Additional Features
+  const addFeatureTotal = features.reduce((s, f) => s + f.cost, 0);
+
+  // --- Total CAPEX ---
+  const totalCAPEX = cabinCost + addItems + sanitary + mattress + assembly +
+    license + designFee + selfCheckin + handling + structCabin +
+    buildingCost + structBldgCost + landscape + electrical +
+    plumbing + cctvTech + legalPermit + preparation + addFeatureTotal;
+
+  // 18. Pre-Opening Costs
+  const cabinInventory = total * 10000000;
+  const transportHQ = 61500000;      // Fixed HQ supervision transport & accommodation
+  const transportAssembly = 12800000; // Assembly team transport
+  const launching = 50000000;
+  const photoVideo = 50000000;
+  const supervisionFee = 58200000;
+  // Operating expense for 2 months (scaled from 28-cabin base)
+  const opex2Months = (total / 28) * 581578238; // Scales proportionally
+  const preOps = cabinInventory + transportHQ + transportAssembly + launching + photoVideo + supervisionFee + opex2Months;
+
+  const totalInvestment = totalCAPEX + preOps;
+
+  return {
+    cabinCost, addItems, sanitary, mattress, assembly, license,
+    designFee, selfCheckin, handling, structCabin,
+    buildingCost, structBldgCost, landscape, electrical,
+    plumbing, cctvTech, legalPermit, preparation, addFeatureTotal,
+    totalCAPEX, preOps, totalInvestment,
+    cabinInventory, transportHQ, transportAssembly, launching, photoVideo, supervisionFee, opex2Months,
+    features, total,
+  };
+}
+
+function getBuildingComp(n) {
+  for (const r of BLDG_COMP) {
+    if (n > r.min && n <= r.max) return r.q;
+  }
+  return BLDG_COMP[BLDG_COMP.length - 1].q;
+}
+
+// ============================================================
+// P&L CALCULATION ENGINE
+// ============================================================
+
+// Monthly OPEX base (Year 1, 28-cabin reference)
+const OPEX_BASE = {
+  salaries_fixed: 241150000,   // Branch leader, engineering, Bobodeli staff (annual, incl THR)
+  salary_per_cabin: 27300000,  // Variable staff: 0.6 staff/cabin × 3.5M × 13 months annual
+  profFee: 65065000,           // Professional/outsource (annual, fixed)
+  transport: 9600000,          // Annual (fixed)
+  utilities_per_cabin: 12385714, // Annual per cabin (346.8M / 28)
+  supplies_per_cabin: 4102890, // Annual per cabin (114.88M / 28)
+  maintenance_per_cabin: 1440000, // Annual per cabin (40.32M / 28)
+  it: 37200000,                // Annual (fixed)
+  repair_per_cabin: 2460000,   // Annual per cabin (68.88M / 28)
+  misc: 33600000,              // Annual (fixed)
+  mgmtAdminRate: 0.064,        // % of Net Revenue
+  legal: 8400000,              // Annual (fixed)
+  insurance_per_cabin: 3069941, // Annual per cabin (85.96M / 28), NO inflation
+  perfFeeRate: 0.0667,         // % of GOP
+  reservedFundRate: 0.05,      // % of EBITDA
+};
+
+function calcAnnualOpex(numCabins, netRevenue, gop, ebitda, inflFactor) {
+  const n = numCabins;
+  const inf = inflFactor;
+  const salaries = (OPEX_BASE.salaries_fixed + OPEX_BASE.salary_per_cabin * n) * inf;
+  const profFee = OPEX_BASE.profFee * inf;
+  const transport = OPEX_BASE.transport * inf;
+  const utilities = OPEX_BASE.utilities_per_cabin * n * inf;
+  const supplies = OPEX_BASE.supplies_per_cabin * n * inf;
+  const maintenance = OPEX_BASE.maintenance_per_cabin * n * inf;
+  const it = OPEX_BASE.it * inf;
+  const repair = OPEX_BASE.repair_per_cabin * n * inf;
+  const misc = OPEX_BASE.misc * inf;
+  const mgmtAdmin = netRevenue * OPEX_BASE.mgmtAdminRate;
+  const legal = OPEX_BASE.legal * inf;
+  const insurance = OPEX_BASE.insurance_per_cabin * n; // No inflation
+  // Performance Fee & Reserved Fund
+  const perfFee = Math.max(0, gop) * OPEX_BASE.perfFeeRate;
+  const reservedFund = Math.max(0, ebitda) * OPEX_BASE.reservedFundRate;
+  return { salaries, profFee, transport, utilities, supplies, maintenance, it, repair, misc, mgmtAdmin, legal, insurance, perfFee, reservedFund };
+}
+
+function getRentRate(occ) {
+  if (occ < 0.60) return 0.03;
+  if (occ < 0.90) return 0.04;
+  return 0.05;
+}
+
+// Calculate ONE P&L period
+function calcPeriod(inp, yearIdx, months, occ, marketingRates) {
+  const { cabins, prices, extrabedOcc, extrabedPrice, ancillaryRate, ancillaryPerGuest, bobodeliMonthly, discountRate, commissionRate, cosRoom, priceInflation, opexInflation, province } = inp;
+  const n = Object.values(cabins).reduce((s, v) => s + v, 0);
+  const priceFactor = Math.pow(1 + priceInflation, yearIdx);    // 5%/yr from Y1 base
+  const inflFactor = Math.pow(1 + opexInflation, yearIdx);      // 3%/yr from Y1 base
+
+  // Room nights sold per type
+  const daysInPeriod = months * 30;
+  let grossRevRoom = 0;
+  let totalRoomNights = 0;
+  CABIN_TYPES.forEach(t => {
+    const count = cabins[t.id];
+    if (count === 0) return;
+    const displayPrice = prices[t.id] * priceFactor;
+    const grossPrice = displayPrice / 1.1;
+    const nights = count * daysInPeriod * occ;
+    totalRoomNights += nights;
+    grossRevRoom += nights * grossPrice;
+  });
+
+  // Extrabed
+  const extrabedGrossPrice = extrabedPrice * priceFactor / 1.1;
+  const grossRevExtrabed = totalRoomNights * extrabedOcc * extrabedGrossPrice;
+
+  // Ancillary
+  const ancillaryGPG = ancillaryPerGuest * priceFactor / 1.1;
+  const grossRevAncillary = totalRoomNights * ancillaryRate * ancillaryGPG;
+
+  // Bobodeli (grows at opex inflation rate)
+  const grossRevBobodeli = bobodeliMonthly * months * inflFactor;
+
+  const grossRevenue = grossRevRoom + grossRevExtrabed + grossRevAncillary + grossRevBobodeli;
+
+  // Discount & Commission
+  const discount = grossRevenue * discountRate;
+  const netRevBfComm = grossRevenue - discount;
+  const commission = netRevBfComm * commissionRate;
+  const netRevenue = netRevBfComm - commission;
+
+  // CoS
+  const cosRoomAmt = grossRevRoom * cosRoom;
+  const cosAncillary = grossRevAncillary * 0.45;
+  const cosBobodeli = grossRevBobodeli * 0.50;
+  const totalCoS = cosRoomAmt + cosAncillary + cosBobodeli;
+
+  const grossProfit = netRevenue - totalCoS;
+
+  // Delivery
+  const deliveryMonthly = (DELIVERY_BY_REGION[province] || 3500000) * inflFactor;
+  const delivery = deliveryMonthly * months;
+
+  // Marketing (handles monthly split or uniform for annual)
+  let marketing = 0;
+  if (Array.isArray(marketingRates)) {
+    // Monthly: array of rates per month (already per-month net revenue)
+    marketingRates.forEach(rate => { marketing += (netRevenue / months) * rate; });
+  } else {
+    marketing = netRevenue * marketingRates;
+  }
+
+  // Iterative approach: estimate GOP first, then compute perfFee, then EBITDA, then reservedFund
+  // (Avoids circular dependency by running two passes)
+  let gopEstimate = grossProfit; // rough estimate
+  let opexIter = calcAnnualOpex(n, netRevenue, gopEstimate, 0, inflFactor);
+  let totalExpense1 = opexIter.salaries + opexIter.profFee + opexIter.transport +
+    opexIter.utilities + opexIter.supplies + opexIter.maintenance + opexIter.it +
+    opexIter.repair + opexIter.misc + opexIter.mgmtAdmin + opexIter.legal +
+    opexIter.insurance + delivery + marketing;
+  let gopApprox = grossProfit - totalExpense1;
+  let ebitdarApprox = gopApprox - (Math.max(0, gopApprox) * OPEX_BASE.perfFeeRate);
+  let rentApprox = (inp.investScheme === 'full_operator') ? 0 : netRevenue * getRentRate(occ);
+  let ebitdaApprox = ebitdarApprox - rentApprox;
+
+  // Second pass with actual GOP and EBITDA
+  let opex = calcAnnualOpex(n, netRevenue, gopApprox, ebitdaApprox, inflFactor);
+  let perfFee = opex.perfFee;
+  let totalExpenseFinal = opex.salaries + opex.profFee + opex.transport +
+    opex.utilities + opex.supplies + opex.maintenance + opex.it +
+    opex.repair + opex.misc + opex.mgmtAdmin + opex.legal +
+    opex.insurance + delivery + marketing;
+
+  const gop = grossProfit - totalExpenseFinal;
+  const ebitdar = gop - perfFee;
+  // Rent applies only in JV scheme; Full Operator = 0
+  const rent = (inp.investScheme === 'full_operator') ? 0 : netRevenue * getRentRate(occ);
+  const ebitda = ebitdar - rent;
+  const reservedFund = Math.max(0, ebitda) * OPEX_BASE.reservedFundRate;
+  const ebitdaAfReserve = ebitda - reservedFund;
+
+  return {
+    // Revenue
+    grossRevenue, grossRevRoom, grossRevExtrabed, grossRevAncillary, grossRevBobodeli,
+    discount, netRevBfComm, commission, netRevenue,
+    // CoS
+    cosRoomAmt, cosAncillary, cosBobodeli, totalCoS,
+    grossProfit,
+    // Opex
+    marketing, salaries: opex.salaries, transport: opex.transport, profFee: opex.profFee,
+    utilities: opex.utilities, supplies: opex.supplies, maintenance: opex.maintenance,
+    it: opex.it, repair: opex.repair, misc: opex.misc,
+    mgmtAdmin: opex.mgmtAdmin, legal: opex.legal, delivery, insurance: opex.insurance,
+    totalExpense: totalExpenseFinal,
+    // Profit
+    gop, perfFee, ebitdar, rent, ebitda, reservedFund, ebitdaAfReserve,
+    // Meta
+    occ, roomNights: totalRoomNights, n,
+  };
+}
+
+function calculateProjection(inp) {
+  // Year 1 marketing: blended 0.75% of NR (= 6 months×1% + 6 months×0.5% averaged annually)
+  // Year 2+: 0.5% of NR
+  const { occupancy } = inp;
+  const results = [];
+  for (let y = 1; y <= 15; y++) {
+    const occ = occupancy[y - 1];
+    const mktRate = y === 1 ? 0.0075 : 0.005;
+    const r = calcPeriod(inp, y - 1, 12, occ, mktRate);
+    results.push({ year: y, ...r });
+  }
+  return results;
+}
+
+// ============================================================
+// MAIN RUN
+// ============================================================
+let revenueChart = null, cashFlowChart = null;
+
+function runCalculation() {
+  document.getElementById('loadingOverlay').classList.add('show');
+  setTimeout(() => {
+    try {
+      const inp = getInputs();
+      const n = Object.values(inp.cabins).reduce((s, v) => s + v, 0);
+      if (n === 0) { alert('Please enter at least 1 cabin.'); document.getElementById('loadingOverlay').classList.remove('show'); return; }
+      const capex = calculateCAPEX(inp);
+      const proj = calculateProjection(inp);
+      renderOutput(capex, proj, inp);
+    } catch (e) {
+      console.error(e);
+      alert('Calculation error: ' + e.message);
+    }
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }, 50);
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function renderOutput(capex, proj, inp) {
+  const area = document.getElementById('outputArea');
+  // Find payback — interpolated to nearest month
+  let cumCF = -capex.totalInvestment;
+  let paybackYear = null;
+  let paybackStr = '> 15 Years';
+  let paybackDetail = '';
+
+  for (const r of proj) {
+    const balanceBefore = cumCF;           // negative balance entering this year
+    cumCF += r.ebitdaAfReserve;
+    if (cumCF >= 0 && paybackYear === null) {
+      paybackYear = r.year;
+      // How many months into this year does the balance cross zero?
+      const monthlyRecovery = r.ebitdaAfReserve / 12;
+      const monthsFraction = Math.abs(balanceBefore) / monthlyRecovery;
+      const monthsIntoYear = Math.ceil(monthsFraction);   // round up to next whole month
+
+      const totalMonths = (r.year - 1) * 12 + monthsIntoYear;
+      const yrs  = Math.floor(totalMonths / 12);
+      const mnts = totalMonths % 12;
+
+      if (mnts === 0) {
+        paybackStr = `${yrs} Year${yrs !== 1 ? 's' : ''}`;
+        paybackDetail = `Exactly at end of Year ${yrs}`;
+      } else {
+        paybackStr = `${yrs} Year${yrs !== 1 ? 's' : ''} ${mnts} Month${mnts !== 1 ? 's' : ''}`;
+        paybackDetail = `Within Year ${r.year}, approx month ${monthsIntoYear}`;
+      }
+      break;
+    }
+  }
+
+  const y1 = proj[0], y5 = proj[4], y10 = proj[9], y15 = proj[14];
+  const y1Margin = y1.netRevenue > 0 ? y1.ebitda / y1.netRevenue : 0;
+  const y5Margin = y5.netRevenue > 0 ? y5.ebitda / y5.netRevenue : 0;
+  const y10Margin = y10.netRevenue > 0 ? y10.ebitda / y10.netRevenue : 0;
+
+  area.innerHTML = `
+    <!-- KPI CARDS -->
+    <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Investment Scheme:</span>
+      ${inp.investScheme === 'full_operator'
+        ? `<span style="background:#eef5f2;color:var(--primary);border:1px solid var(--primary);border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;">🏢 Full Operator — Partner 100% · Rent-Free P&L</span>`
+        : `<span style="background:#eef5f2;color:var(--primary);border:1px solid var(--primary);border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;">🤝 JV Invest — Bobobox ${fmtPct(inp.boboboxPct)} / Partner ${fmtPct(inp.partnerPct)} · Rent in P&L</span>`
+      }
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card primary-card">
+        <div class="kpi-label">Total Investment</div>
+        <div class="kpi-value" style="font-size:16px;">${fmtIDR(capex.totalInvestment)}</div>
+        <div class="kpi-sub">CAPEX: ${fmtIDR(capex.totalCAPEX)} + Pre-Ops: ${fmtIDR(capex.preOps)}</div>
+      </div>
+      <div class="kpi-card success-card">
+        <div class="kpi-label">Year 1 Net Revenue</div>
+        <div class="kpi-value" style="font-size:16px;">${fmtIDR(y1.netRevenue)}</div>
+        <div class="kpi-sub">Gross: ${fmtIDR(y1.grossRevenue)} · Occ: ${fmtPct(y1.occ)}</div>
+      </div>
+      <div class="kpi-card warning-card">
+        <div class="kpi-label">Investment Payback Period</div>
+        <div class="kpi-value" style="font-size:${paybackStr.length > 14 ? '13px' : '16px'};line-height:1.3;">${paybackStr}</div>
+        <div class="kpi-sub">${paybackDetail || 'Beyond 15-year horizon'}<br><span style="font-size:10px;opacity:0.8;">CAPEX recovered via cumulative EBITDA af Reserved Fund</span></div>
+      </div>
+      <div class="kpi-card success-card">
+        <div class="kpi-label">Year 1 EBITDA</div>
+        <div class="kpi-value" style="font-size:16px;">${fmtIDR(y1.ebitda)}</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge ${y1Margin > 0.3 ? 'badge-green' : y1Margin > 0.2 ? 'badge-yellow' : 'badge-red'}">${fmtPct(y1Margin)} margin</span>
+        </div>
+      </div>
+      <div class="kpi-card primary-card">
+        <div class="kpi-label">Year 5 EBITDA</div>
+        <div class="kpi-value" style="font-size:16px;">${fmtIDR(y5.ebitda)}</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge ${y5Margin > 0.4 ? 'badge-green' : y5Margin > 0.3 ? 'badge-yellow' : 'badge-red'}">${fmtPct(y5Margin)} margin</span>
+        </div>
+      </div>
+      <div class="kpi-card success-card">
+        <div class="kpi-label">Year 10 EBITDA</div>
+        <div class="kpi-value" style="font-size:16px;">${fmtIDR(y10.ebitda)}</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge ${y10Margin > 0.45 ? 'badge-green' : 'badge-yellow'}">${fmtPct(y10Margin)} margin</span>
+          · Y15: ${fmtIDR(y15.ebitda)}
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">📊 Revenue & EBITDA (15 Years)</div>
+        <div class="chart-container"><canvas id="revenueChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">💰 Cumulative Cash Flow</div>
+        <div class="chart-container"><canvas id="cashFlowChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="card">
+      <div class="card-body" style="padding:0;">
+        <div class="tabs" style="padding:0 14px;background:var(--light);">
+          <button class="tab-btn active" onclick="switchTab(this,'capexTab')">📦 CAPEX & Investment</button>
+          <button class="tab-btn" onclick="switchTab(this,'annualTab')">📋 Annual P&L (Y1–Y15)</button>
+        </div>
+
+        <!-- CAPEX TAB -->
+        <div class="tab-content active" id="capexTab">
+          <div style="padding:14px;">${renderCapexTable(capex)}</div>
+        </div>
+
+        <!-- ANNUAL P&L TAB -->
+        <div class="tab-content" id="annualTab">
+          <div class="pnl-wrapper">${renderAnnualPLTable(proj, capex.totalInvestment)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Draw charts
+  drawCharts(proj, capex);
+}
+
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+function renderCapexTable(c) {
+  const rows = [
+    { type: 'section', label: 'I. CABIN INVESTMENT', val: null },
+    { type: 'sub', label: 'Cabin Unit Cost (per type)', val: c.cabinCost },
+    { type: 'sub', label: 'Additional Hot Tub Items', val: c.addItems },
+    { type: 'sub', label: 'Sanitary & Water Heater', val: c.sanitary },
+    { type: 'sub', label: 'Mattress & Bedding', val: c.mattress },
+    { type: 'sub', label: 'Assembly & Installation', val: c.assembly },
+    { type: 'section', label: 'II. LICENSE & TECHNOLOGY', val: null },
+    { type: 'sub', label: 'License Fee (per cabin)', val: c.license },
+    { type: 'sub', label: 'Design Fee', val: c.designFee },
+    { type: 'sub', label: 'Self Check-in System (DECA)', val: c.selfCheckin },
+    { type: 'section', label: 'III. HANDLING & DELIVERY', val: null },
+    { type: 'sub', label: 'Cabin Handling & Delivery (per cabin)', val: c.handling },
+    { type: 'section', label: 'IV. SITE INFRASTRUCTURE', val: null },
+    { type: 'sub', label: 'Cabin Structures', val: c.structCabin },
+    { type: 'sub', label: 'Buildings (Lobby, Bobodeli, Dormitory, etc.)', val: c.buildingCost },
+    { type: 'sub', label: 'Building Structures', val: c.structBldgCost },
+    { type: 'sub', label: 'Landscape & Outdoor', val: c.landscape },
+    { type: 'sub', label: 'Electrical System', val: c.electrical },
+    { type: 'sub', label: 'Plumbing System', val: c.plumbing },
+    { type: 'sub', label: 'CCTV, AC & Equipment', val: c.cctvTech },
+    { type: 'sub', label: 'Legal & Permit', val: c.legalPermit },
+    { type: 'sub', label: 'Site Preparation & Land Clearing', val: c.preparation },
+    ...( c.addFeatureTotal > 0 ? [
+      { type: 'section', label: 'V. ADDITIONAL FEATURES', val: null },
+      ...c.features.map(f => ({ type: 'sub', label: f.name, val: f.cost })),
+    ] : []),
+    { type: 'total', label: 'TOTAL CAPEX', val: c.totalCAPEX },
+    { type: 'section', label: 'PRE-OPENING COSTS', val: null },
+    { type: 'sub', label: 'Cabin Inventory (Rp 10M × cabins)', val: c.cabinInventory },
+    { type: 'sub', label: 'Operating Expense (2 Months)', val: c.opex2Months },
+    { type: 'sub', label: 'HQ Supervision Transport & Accommodation', val: c.transportHQ },
+    { type: 'sub', label: 'Assembly Team Transport', val: c.transportAssembly },
+    { type: 'sub', label: 'Launching Event', val: c.launching },
+    { type: 'sub', label: 'Photo & Video Production', val: c.photoVideo },
+    { type: 'sub', label: 'Supervision Fee', val: c.supervisionFee },
+    { type: 'total-pre', label: 'TOTAL PRE-OPENING', val: c.preOps },
+    { type: 'grand', label: '🏆 TOTAL INVESTMENT', val: c.totalInvestment },
+  ];
+
+  let html = `<table class="capex-table"><thead><tr><th>Item</th><th>Amount (Rp)</th></tr></thead><tbody>`;
+  rows.forEach(r => {
+    if (r.type === 'section') {
+      html += `<tr class="group-header"><td colspan="2">${r.label}</td></tr>`;
+    } else if (r.type === 'sub') {
+      html += `<tr class="sub-row"><td>${r.label}</td><td>${fmtIDRFull(r.val)}</td></tr>`;
+    } else if (r.type === 'total') {
+      html += `<tr style="background:#dce8f5;font-weight:800;"><td style="padding:8px 10px;color:var(--primary);">TOTAL CAPEX</td><td style="text-align:right;color:var(--primary);font-size:13px;">${fmtIDRFull(r.val)}</td></tr>`;
+    } else if (r.type === 'total-pre') {
+      html += `<tr style="background:#e8f5e9;font-weight:800;"><td style="padding:8px 10px;color:#2e7d32;">TOTAL PRE-OPENING</td><td style="text-align:right;color:#2e7d32;font-size:13px;">${fmtIDRFull(r.val)}</td></tr>`;
+    } else if (r.type === 'grand') {
+      html += `<tr class="total-row"><td style="padding:10px 10px;font-size:14px;">${r.label}</td><td style="font-size:14px;">${fmtIDRFull(r.val)}</td></tr>`;
+    }
+  });
+  html += `</tbody></table>`;
+  return html;
+}
+
+function renderAnnualPLTable(proj, totalInvestment) {
+  const yrs = proj;
+  const yCols = yrs.map(r => `<th>Y${r.year}<br><span style="font-weight:400;opacity:0.8;">${fmtPct(r.occ)}</span></th>`).join('');
+
+  const rows = [
+    { type: 'section', label: 'GROSS REVENUE' },
+    { type: 'revenue', label: 'Gross Revenue (Total)', key: 'grossRevenue', fmt: 'M' },
+    { type: 'rev-sub', label: '↳ Room Revenue', key: 'grossRevRoom', fmt: 'M' },
+    { type: 'rev-sub', label: '↳ Extra Bed Revenue', key: 'grossRevExtrabed', fmt: 'M' },
+    { type: 'rev-sub', label: '↳ Ancillary Revenue', key: 'grossRevAncillary', fmt: 'M' },
+    { type: 'rev-sub', label: '↳ Bobodeli Revenue', key: 'grossRevBobodeli', fmt: 'M' },
+    { type: 'deduct', label: '(−) Discount & Promo', key: 'discount', neg: true, fmt: 'M' },
+    { type: 'subtotal', label: 'Net Revenue Bf Commission', key: 'netRevBfComm', fmt: 'M' },
+    { type: 'deduct', label: '(−) Commission (OTA + Direct)', key: 'commission', neg: true, fmt: 'M' },
+    { type: 'section', label: 'NET REVENUE' },
+    { type: 'revenue', label: 'Net Revenue', key: 'netRevenue', fmt: 'M' },
+    { type: 'separator' },
+    { type: 'section', label: 'COST OF SALES' },
+    { type: 'cost-sub', label: 'CoS Room', key: 'cosRoomAmt', neg: true, fmt: 'M' },
+    { type: 'cost-sub', label: 'CoS Ancillary', key: 'cosAncillary', neg: true, fmt: 'M' },
+    { type: 'cost-sub', label: 'CoS Bobodeli', key: 'cosBobodeli', neg: true, fmt: 'M' },
+    { type: 'cost', label: 'Total Cost of Sales', key: 'totalCoS', neg: true, fmt: 'M' },
+    { type: 'subtotal', label: 'GROSS PROFIT', key: 'grossProfit', fmt: 'M' },
+    { type: 'separator' },
+    { type: 'section', label: 'BRANCH OPERATIONAL EXPENSE' },
+    { type: 'opex', label: 'Marketing Expense (Y1: 0.75% NR blended; Y2+: 0.5% NR)', key: 'marketing', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Salaries & Benefit', key: 'salaries', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Transport & Travel', key: 'transport', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Professional Fee & Outsourcing', key: 'profFee', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Utilities (Electricity, Water)', key: 'utilities', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Supplies & Amenities', key: 'supplies', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Maintenance Expense', key: 'maintenance', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'IT Expense', key: 'it', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Repair Expense', key: 'repair', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Miscellaneous', key: 'misc', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Management & Admin Fee (6.4% NR)', key: 'mgmtAdmin', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Legal & Permit', key: 'legal', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Delivery Expense', key: 'delivery', neg: true, fmt: 'M' },
+    { type: 'opex', label: 'Insurance Fee', key: 'insurance', neg: true, fmt: 'M' },
+    { type: 'cost', label: 'Total Branch Expense', key: 'totalExpense', neg: true, fmt: 'M' },
+    { type: 'separator' },
+    { type: 'gop', label: '🏆 GOP (Gross Operating Profit)', key: 'gop', fmt: 'M' },
+    { type: 'deduct', label: '(−) Performance Fee (6.67% GOP)', key: 'perfFee', neg: true, fmt: 'M' },
+    { type: 'ebitdar', label: currentInvestScheme === 'full_operator' ? 'EBITDA (= EBITDAR, Rent-Free)' : 'EBITDAR', key: 'ebitdar', fmt: 'M' },
+    ...(currentInvestScheme !== 'full_operator' ? [
+      { type: 'deduct', label: '(−) Rent (Revenue-Sharing: 3–5% NR by occupancy)', key: 'rent', neg: true, fmt: 'M' },
+      { type: 'ebitda', label: '⭐ EBITDA', key: 'ebitda', fmt: 'M' },
+    ] : [
+      { type: 'ebitda', label: '⭐ EBITDA (No Rent — Full Operator)', key: 'ebitda', fmt: 'M' },
+    ]),
+    { type: 'deduct', label: '(−) Reserved Fund (5% EBITDA)', key: 'reservedFund', neg: true, fmt: 'M' },
+    { type: 'highlight', label: 'EBITDA after Reserved Fund', key: 'ebitdaAfReserve', fmt: 'M' },
+    { type: 'separator' },
+    { type: 'margin', label: 'EBITDA Margin (% Net Revenue)', key: 'ebitdaMargin', fmt: '%' },
+    { type: 'margin', label: 'GOP Margin (% Net Revenue)', key: 'gopMargin', fmt: '%' },
+    { type: 'margin', label: 'Room Nights Sold', key: 'roomNights', fmt: '#' },
+  ];
+
+  let html = `<table class="pnl-table"><thead><tr><th>P&L Line Item</th>${yCols}</tr></thead><tbody>`;
+
+  rows.forEach(row => {
+    if (row.type === 'separator') {
+      html += `<tr class="row-separator"><td colspan="${1 + yrs.length}"></td></tr>`;
+      return;
+    }
+    const cls = {
+      'section': 'row-section', 'revenue': 'row-revenue', 'rev-sub': 'row-revenue-sub',
+      'cost': 'row-cost', 'cost-sub': 'row-cost-sub', 'deduct': 'row-deduction',
+      'subtotal': 'row-subtotal', 'gop': 'row-gop', 'ebitdar': 'row-subtotal',
+      'ebitda': 'row-ebitda', 'highlight': 'row-highlight', 'opex': 'row-opex', 'margin': '',
+    }[row.type] || '';
+
+    let cells = '';
+    if (row.type === 'section') {
+      html += `<tr class="${cls}"><td colspan="${1 + yrs.length}">${row.label}</td></tr>`;
+      return;
+    }
+
+    yrs.forEach(r => {
+      let val;
+      if (row.key === 'ebitdaMargin') val = r.netRevenue > 0 ? r.ebitda / r.netRevenue : 0;
+      else if (row.key === 'gopMargin') val = r.netRevenue > 0 ? r.gop / r.netRevenue : 0;
+      else val = r[row.key] || 0;
+
+      let display;
+      if (row.fmt === '%') display = fmtPct(val);
+      else if (row.fmt === '#') display = Math.round(val).toLocaleString('id-ID');
+      else {
+        const showVal = row.neg ? -val : val;
+        display = fmtM(val);
+        const cls2 = val < 0 ? 'negative' : (row.neg ? '' : 'positive');
+        cells += `<td class="${cls2}">${fmtM(showVal)}</td>`;
+        return;
+      }
+      cells += `<td>${display}</td>`;
+    });
+
+    if (!cells) {
+      yrs.forEach(r => {
+        let val;
+        if (row.key === 'ebitdaMargin') val = r.netRevenue > 0 ? r.ebitda / r.netRevenue : 0;
+        else if (row.key === 'gopMargin') val = r.netRevenue > 0 ? r.gop / r.netRevenue : 0;
+        else val = r[row.key] || 0;
+        if (row.fmt === '%') cells += `<td>${fmtPct(val)}</td>`;
+        else cells += `<td>${Math.round(val).toLocaleString('id-ID')}</td>`;
+      });
+    }
+
+    html += `<tr class="${cls}"><td>${row.label}</td>${cells}</tr>`;
+  });
+
+  // ── INVESTMENT RECOVERY SECTION ──────────────────────────────────────────
+  // CAPEX is a partner investment, NOT an operating expense.
+  // We show here how EBITDA af Reserved Fund recovers the investment each year.
+  html += `<tr class="row-separator"><td colspan="${1 + yrs.length}"></td></tr>`;
+  html += `<tr style="background:#1e3d2f;color:#a8c9b8;">
+    <td colspan="${1 + yrs.length}" style="padding:8px 10px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">
+      📐 INVESTMENT RECOVERY (CAPEX as Partner Investment — not P&amp;L Expense)
+    </td>
+  </tr>`;
+
+  // Row: Total Investment (static — same value every column for reference)
+  html += `<tr style="background:#172e23;color:#7aab90;">
+    <td style="padding:6px 10px;font-size:11px;">Total Investment (CAPEX + Pre-Ops)</td>
+    ${yrs.map(() => `<td style="font-weight:700;color:#7aab90;">(${fmtM(totalInvestment)})</td>`).join('')}
+  </tr>`;
+
+  // Row: Annual Recovery = EBITDA af Reserved Fund
+  html += `<tr style="background:#1e3d2f;color:#a8d4b8;">
+    <td style="padding:6px 10px;font-size:11px;">Annual Recovery (EBITDA af Reserved Fund)</td>
+    ${yrs.map(r => `<td style="font-weight:700;color:#90d4a8;">+${fmtM(r.ebitdaAfReserve)}</td>`).join('')}
+  </tr>`;
+
+  // Row: Cumulative Recovery
+  let cumRec = 0;
+  const cumRecCells = yrs.map(r => {
+    cumRec += r.ebitdaAfReserve;
+    return `<td style="font-weight:600;color:#80c4a4;">${fmtM(cumRec)}</td>`;
+  }).join('');
+  html += `<tr style="background:#142818;color:#80c4a4;">
+    <td style="padding:6px 10px;font-size:11px;">Cumulative Recovery</td>
+    ${cumRecCells}
+  </tr>`;
+
+  // Row: Remaining Investment Balance (turns positive = payback achieved, with month interpolation)
+  let cumBal = totalInvestment;
+  let paybackYrInTable = null;
+  const balCells = yrs.map(r => {
+    const balBefore = cumBal;
+    cumBal -= r.ebitdaAfReserve;
+    const isPaid = cumBal <= 0;
+
+    let label, color;
+    if (isPaid && paybackYrInTable === null) {
+      paybackYrInTable = r.year;
+      // Interpolate exact month
+      const monthlyRec = r.ebitdaAfReserve / 12;
+      const mFrac = balBefore / monthlyRec;          // months needed (balBefore is positive here)
+      const mInYear = Math.ceil(mFrac);
+      const totalM = (r.year - 1) * 12 + mInYear;
+      const displayYrs = Math.floor(totalM / 12);
+      const displayMnts = totalM % 12;
+      const pbLabel = displayMnts === 0
+        ? `${displayYrs} Year${displayYrs !== 1 ? 's' : ''}`
+        : `${displayYrs}Y ${displayMnts}M`;
+      color = '#27ae60';
+      label = `<span style="background:#27ae60;color:white;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:800;">✓ PAYBACK</span><br>${pbLabel}<br><span style="font-size:9px;opacity:0.8;">surplus ${fmtM(Math.abs(cumBal))}</span>`;
+    } else if (isPaid) {
+      color = '#27ae60';
+      label = `<span style="font-size:9px;">+${fmtM(Math.abs(cumBal))} surplus</span>`;
+    } else {
+      color = '#e07050';
+      label = `(${fmtM(cumBal)}) left`;
+    }
+    return `<td style="font-weight:700;color:${color};font-size:10px;line-height:1.5;">${label}</td>`;
+  }).join('');
+  html += `<tr style="background:#0d1f14;">
+    <td style="padding:6px 10px;font-size:11px;color:#b0c8b8;font-weight:700;">Remaining Investment Balance</td>
+    ${balCells}
+  </tr>`;
+
+  html += `</tbody></table>`;
+  return html;
+}
+
+
+function fmtM(val) {
+  const m = val / 1e6;
+  if (Math.abs(m) < 0.05) return '<span style="color:#aaa">-</span>';
+  if (Math.abs(m) >= 10000) return (m / 1000).toFixed(1) + 'B';
+  return m.toFixed(0) + 'M';
+}
+
+function drawCharts(proj, capex) {
+  // Destroy old
+  if (revenueChart) { revenueChart.destroy(); revenueChart = null; }
+  if (cashFlowChart) { cashFlowChart.destroy(); cashFlowChart = null; }
+
+  const labels = proj.map(r => `Y${r.year}`);
+  const revenues = proj.map(r => r.netRevenue / 1e9);
+  const ebitdas = proj.map(r => r.ebitda / 1e9);
+  const gopVals = proj.map(r => r.gop / 1e9);
+
+  // Revenue & EBITDA chart
+  const ctx1 = document.getElementById('revenueChart').getContext('2d');
+  revenueChart = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Net Revenue', data: revenues, backgroundColor: 'rgba(61,107,90,0.25)', borderColor: '#3d6b5a', borderWidth: 1.5, borderRadius: 4 },
+        { label: 'GOP', data: gopVals, backgroundColor: 'rgba(111,168,145,0.45)', borderColor: '#6fa891', borderWidth: 1.5, borderRadius: 4 },
+        { label: 'EBITDA', data: ebitdas, backgroundColor: 'rgba(200,169,107,0.85)', borderColor: '#c8a96b', borderWidth: 1, borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { font: { size: 10 }, padding: 8 } } },
+      scales: {
+        x: { ticks: { font: { size: 9 } } },
+        y: { ticks: { font: { size: 9 }, callback: v => v.toFixed(1) + 'B' }, title: { display: true, text: 'Rp Billion', font: { size: 9 } } }
+      }
+    }
+  });
+
+  // Cumulative Investment Recovery chart
+  // Starts at -TotalInvestment (partner's capital deployed), each year EBITDA af Reserve reduces the balance.
+  // Crosses zero = Payback Year.
+  let cumCF = -capex.totalInvestment / 1e9;
+  const cfData = [{ year: 0, val: cumCF }];
+  proj.forEach(r => { cumCF += r.ebitdaAfReserve / 1e9; cfData.push({ year: r.year, val: cumCF }); });
+  const cfLabels = cfData.map(d => d.year === 0 ? 'Invest' : `Y${d.year}`);
+  const cfVals = cfData.map(d => d.val);
+
+  const ctx2 = document.getElementById('cashFlowChart').getContext('2d');
+  cashFlowChart = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: cfLabels,
+      datasets: [{
+        label: 'Investment Balance (recovered by EBITDA af Reserve)',
+        data: cfVals,
+        borderColor: '#3d6b5a',
+        backgroundColor: (context) => {
+          const chart = context.chart;
+          const { ctx, chartArea } = chart;
+          if (!chartArea) return null;
+          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          gradient.addColorStop(0, 'rgba(61,107,90,0.04)');
+          gradient.addColorStop(1, 'rgba(61,107,90,0.22)');
+          return gradient;
+        },
+        fill: true, tension: 0.3, borderWidth: 2.5,
+        pointBackgroundColor: cfVals.map(v => v >= 0 ? '#27ae60' : '#e74c3c'),
+        pointRadius: cfVals.map(v => v >= 0 ? 6 : 4),
+        pointBorderColor: cfVals.map(v => v >= 0 ? '#1d8348' : '#c0392b'),
+        pointBorderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, labels: { font: { size: 9 }, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              return v >= 0
+                ? `✅ Payback achieved! Surplus: +${v.toFixed(2)}B`
+                : `Remaining investment: (${Math.abs(v).toFixed(2)}B)`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 9 } } },
+        y: {
+          ticks: { font: { size: 9 }, callback: v => v.toFixed(1) + 'B' },
+          title: { display: true, text: 'Rp Billion (negative = investment remaining)', font: { size: 9 } },
+          grid: {
+            color: ctx => ctx.tick.value === 0 ? 'rgba(231,76,60,0.8)' : 'rgba(0,0,0,0.06)',
+            lineWidth: ctx => ctx.tick.value === 0 ? 2 : 1,
+          }
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
